@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Salario - Correos España</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #F4F4F4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #FFFFFF;
+            padding: 30px; /* Añadido más padding para mayor espacio dentro del contenedor */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border: 2px solid #003B6F; /* Azul marino para el borde */
+        }
+        h2 {
+            color: #003B6F; /* Azul marino */
+            text-align: center;
+            margin-bottom: 20px; /* Separar un poco el título de los campos */
+        }
+        label {
+            color: #003B6F; /* Azul marino */
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0; /* Ajustar el margen para mayor separación entre campos */
+            border: 1px solid #003B6F;
+            border-radius: 5px;
+            background-color: #F9F9F9;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #FFD700; /* Amarillo Correos */
+            border: none;
+            color: #003B6F; /* Azul marino */
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #FFC107; /* Un tono más oscuro de amarillo */
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #003B6F; /* Azul marino */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Calculadora de Salario</h2>
+    <form id="salaryForm">
+        <label for="baseSalary">Salario base mensual (€):</label>
+        <input type="number" id="baseSalary" value="701.28" readonly>
+
+        <label for="complement">Complemento de puesto (€):</label>
+        <input type="number" id="complement" value="249.64" readonly>
+
+        <label for="complementProductividad">Complemento de productividad y asistencia (€):</label>
+        <input type="number" id="complementProductividad" value="220.29" readonly>
+
+        <label for="yearsOfService">Trienios:</label>
+        <input type="number" id="yearsOfService" placeholder="Introduce tus años de servicio" required>
+
+        <label for="irpf">Retención IRPF (%):</label>
+        <input type="number" id="irpf" placeholder="Introduce el porcentaje de IRPF" required>
+
+        <label for="workedExtra">¿Has trabajado horas extras?</label>
+        <input type="checkbox" id="workedExtra" onchange="toggleExtraHours()">
+
+        <div id="extraHoursField" style="display: none;">
+            <label for="extraHours">Introduce horas extras trabajadas:</label>
+            <input type="number" id="extraHours">
+        </div>
+
+        <label for="huelga">Días de huelga:</label>
+        <input type="number" id="huelga" placeholder="Introduce los días de huelga" value="0" required>
+
+        <button type="button" onclick="calculateNetSalary()">Calcular</button>
+    </form>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    function toggleExtraHours() {
+        const extraHoursField = document.getElementById('extraHoursField');
+        extraHoursField.style.display = document.getElementById('workedExtra').checked ? 'block' : 'none';
+    }
+
+    function calculateTrienios(yearsOfService) {
+        const trienioValue = 20.80;
+        const trienios = Math.floor(yearsOfService / 3);
+        return trienios * trienioValue;
+    }
+
+    function calculateNetSalary() {
+        const baseSalary = parseFloat(document.getElementById('baseSalary').value);
+        const complement = parseFloat(document.getElementById('complement').value);
+        const complementProductividad = parseFloat(document.getElementById('complementProductividad').value);
+        const yearsOfService = parseFloat(document.getElementById('yearsOfService').value);
+        const irpf = parseFloat(document.getElementById('irpf').value) / 100;
+        const diasHuelga = parseFloat(document.getElementById('huelga').value);
+
+        const trienios = calculateTrienios(yearsOfService);
+
+        let salarioBruto = baseSalary + complement + complementProductividad + trienios;
+
+        if (document.getElementById('workedExtra').checked) {
+            const extraHours = parseFloat(document.getElementById('extraHours').value);
+            const hourlyRate = baseSalary / 160;
+            const extraHourRate = hourlyRate * 1.5;
+            salarioBruto += extraHours * extraHourRate;
+        }
+
+        const costoDiaHuelga = 19.30;
+        const descuentoHuelga = diasHuelga * costoDiaHuelga;
+
+        const retencionIRPF = salarioBruto * irpf;
+        const salarioNeto = salarioBruto - retencionIRPF - descuentoHuelga;
+
+        document.getElementById('result').innerHTML = `Tu salario neto es: €${salarioNeto.toFixed(2)}`;
+    }
+</script>
+
+</body>
+</html>
