@@ -16,7 +16,7 @@
             min-height: 100vh;
         }
         .container {
-            max-width: 600px;
+            max-width: 700px; /* Ampliamos el ancho */
             background-color: #FFFFFF;
             padding: 30px;
             border-radius: 10px;
@@ -68,13 +68,26 @@
         table, th, td {
             border: 1px solid #003B6F;
         }
-        th, td {
-            padding: 10px;
-            text-align: center;
-        }
         th {
             background-color: #003B6F;
             color: #FFFFFF;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+        }
+        th:after {
+            content: '';
+            display: block;
+            height: 1px;
+            width: 90%;
+            background-color: #FFFFFF;
+            position: absolute;
+            bottom: 0;
+            left: 5%;
+        }
+        td {
+            padding: 10px;
+            text-align: center;
         }
         .footer {
             text-align: center;
@@ -104,7 +117,7 @@
         </form>
 
         <div id="result"></div>
-        <div class="footer">VICTOR C30 © 2024</div>
+        <div class="footer">Victor C30 © 2024</div>
     </div>
 
     <script>
@@ -202,7 +215,7 @@
                     <th>Mes</th>
                     <th>Días</th>
                     <th colspan="2">Descuento</th>
-                    <th>Salario</th>
+                    <th>Salario mensual</th>
                 </tr>
                 <tr>
                     <th></th>
