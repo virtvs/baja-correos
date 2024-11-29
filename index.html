@@ -16,7 +16,7 @@
             min-height: 100vh;
         }
         .container {
-            max-width: 700px; /* Ampliamos el ancho */
+            max-width: 800px;
             background-color: #FFFFFF;
             padding: 30px;
             border-radius: 10px;
@@ -65,29 +65,14 @@
             margin-top: 20px;
             border-collapse: collapse;
         }
-        table, th, td {
+        th, td {
             border: 1px solid #003B6F;
+            padding: 10px;
+            text-align: center;
         }
         th {
             background-color: #003B6F;
             color: #FFFFFF;
-            padding: 10px;
-            text-align: center;
-            position: relative;
-        }
-        th:after {
-            content: '';
-            display: block;
-            height: 1px;
-            width: 90%;
-            background-color: #FFFFFF;
-            position: absolute;
-            bottom: 0;
-            left: 5%;
-        }
-        td {
-            padding: 10px;
-            text-align: center;
         }
         .footer {
             text-align: center;
@@ -105,7 +90,7 @@
         <h2>Calculadora Baja Médica</h2>
         <form id="bajaForm">
             <label for="baseCotizacion">Base de cotización mensual (€):</label>
-            <input type="number" id="baseCotizacion" placeholder="1768" required>
+            <input type="number" id="baseCotizacion" required>
 
             <label for="fechaInicio">Fecha de inicio de la baja:</label>
             <input type="date" id="fechaInicio" required>
@@ -128,46 +113,36 @@
         }
 
         function calcularBaja(baseCotizacion, diasBaja) {
-            const salarioDiario = baseCotizacion / 30;
-            let totalCobradoBaja = 0;
-            let descuentoTotal = 0;
-            let descuentoAdicional = 0;
+            // Definir salario diario dentro de la función
+            const salario_diario = baseCotizacion / 30;
 
-            // Cálculo para días 1 a 3
-            if (diasBaja >= 1) {
-                const dias = Math.min(diasBaja, 3);
-                const cobrado = salarioDiario * 0.5 * dias;
-                totalCobradoBaja += cobrado;
-                descuentoTotal += salarioDiario * dias - cobrado;
-            }
+            // Descuento porcentual por tramos
+            const dias_1_a_3 = Math.min(diasBaja, 3);
+            const descuento_1_a_3 = dias_1_a_3 * salario_diario * 0.5;
 
-            // Cálculo para días 4 a 20
-            if (diasBaja > 3) {
-                const dias = Math.min(diasBaja - 3, 17);
-                const cobrado = salarioDiario * 0.6 * dias;
-                totalCobradoBaja += cobrado;
-                descuentoTotal += salarioDiario * dias - cobrado;
-            }
+            const dias_4_a_20 = Math.min(Math.max(diasBaja - 3, 0), 17);
+            const descuento_4_a_20 = dias_4_a_20 * salario_diario * 0.4;
 
-            // Cálculo para días 21 en adelante
-            if (diasBaja > 20) {
-                const dias = diasBaja - 20;
-                const cobrado = salarioDiario * 0.75 * dias;
-                totalCobradoBaja += cobrado;
-                descuentoTotal += salarioDiario * dias - cobrado;
-            }
+            const dias_21_en_adelante = Math.max(diasBaja - 20, 0);
+            const descuento_21_en_adelante = dias_21_en_adelante * salario_diario * 0.25;
 
-            // Cálculo del descuento adicional (100 € por cada 4 días acumulados)
-            const diasTotales = diasBaja + 4; // Asumimos 4 días acumulados previos.
-            if (diasTotales > 4) {
-                const bloquesDeCuatro = Math.floor((diasTotales - 4) / 4);
-                descuentoAdicional = bloquesDeCuatro * 100;
-            }
+            const descuento_porcentual = descuento_1_a_3 + descuento_4_a_20 + descuento_21_en_adelante;
+
+            // Descuento adicional por bloques de 4 días
+            const bloques_de_4 = Math.floor(diasBaja / 4);
+            const descuento_adicional = bloques_de_4 * 100;
+
+            // Descuento total
+            const descuento_total = descuento_porcentual + descuento_adicional;
+
+            // Salario mensual
+            const salario_mensual = baseCotizacion - descuento_total;
 
             return {
-                descuentoTotal: descuentoTotal.toFixed(2),
-                descuentoAdicional: descuentoAdicional.toFixed(2),
-                totalCobradoBaja: totalCobradoBaja.toFixed(2)
+                descuentoAdicional: descuento_adicional.toFixed(2),
+                descuentoPorcentual: descuento_porcentual.toFixed(2),
+                descuentoTotal: descuento_total.toFixed(2),
+                salarioMensual: salario_mensual.toFixed(2)
             };
         }
 
@@ -182,7 +157,7 @@
                 periodos.push({
                     inicio: new Date(inicio),
                     fin: new Date(finPeriodo),
-                    dias: Math.ceil((finPeriodo - inicio + 1) / (1000 * 60 * 60 * 24))
+                    dias: calcularDias(inicio, finPeriodo)
                 });
                 inicio.setDate(finPeriodo.getDate() + 1);
             }
@@ -214,28 +189,23 @@
                 <tr>
                     <th>Mes</th>
                     <th>Días</th>
-                    <th colspan="2">Descuento</th>
-                    <th>Salario mensual</th>
-                </tr>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <th>Adicional</th>
-                    <th>Total</th>
-                    <th></th>
+                    <th>Descuento adicional</th>
+                    <th>Descuento porcentual</th>
+                    <th>Descuento total</th>
+                    <th>Salario</th>
                 </tr>`;
 
             periodos.forEach((periodo) => {
-                const { descuentoTotal, descuentoAdicional } = calcularBaja(baseCotizacion, periodo.dias);
-                const salarioMensual = baseCotizacion - descuentoTotal - descuentoAdicional;
+                const { descuentoAdicional, descuentoPorcentual, descuentoTotal, salarioMensual } = calcularBaja(baseCotizacion, periodo.dias);
 
                 resultadoHTML += `
                     <tr>
-                        <td>${periodo.inicio.toLocaleDateString()} - ${periodo.fin.toLocaleDateString()}</td>
+                        <td>${new Date(periodo.inicio).toLocaleDateString()} - ${new Date(periodo.fin).toLocaleDateString()}</td>
                         <td>${periodo.dias}</td>
                         <td>${descuentoAdicional} €</td>
+                        <td>${descuentoPorcentual} €</td>
                         <td>${descuentoTotal} €</td>
-                        <td>${salarioMensual.toFixed(2)} €</td>
+                        <td>${salarioMensual} €</td>
                     </tr>`;
             });
 
