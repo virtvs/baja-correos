@@ -3,60 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora</title>
+    <title>Calculadora Baja Médica</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #F4F4F4;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
         .container {
             max-width: 600px;
             background-color: #FFFFFF;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border: 2px solid #003B6F; /* Azul marino para el borde */
-            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid #003B6F;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         h2 {
-            color: #003B6F; /* Azul marino */
+            color: #003B6F;
             text-align: center;
             margin-bottom: 20px;
         }
         label {
-            color: #003B6F; /* Azul marino */
+            color: #003B6F;
             font-weight: bold;
+            display: block;
+            margin-top: 15px;
         }
-        input, select {
-            width: 100%; /* Ajuste de anchura al 100% */
-            box-sizing: border-box; /* Para asegurar que el padding no sobrepase el contenedor */
+        input {
+            width: 100%;
             padding: 10px;
-            margin: 10px 0;
+            margin-top: 5px;
+            margin-bottom: 15px;
             border: 1px solid #003B6F;
             border-radius: 5px;
-            background-color: #F9F9F9;
+            box-sizing: border-box;
         }
         button {
-            width: 100%; /* Mantener el botón al 100% del ancho */
+            width: 100%;
             padding: 10px;
-            background-color: #FFD700; /* Amarillo Correos */
+            background-color: #FFD700;
             border: none;
-            color: #003B6F; /* Azul marino */
+            color: #003B6F;
             border-radius: 5px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
         }
         button:hover {
-            background-color: #FFC107; /* Un tono más oscuro de amarillo */
-        }
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #003B6F;
-            font-weight: bold;
+            background-color: #FFC107;
         }
         table {
             width: 100%;
@@ -74,6 +76,15 @@
             background-color: #003B6F;
             color: #FFFFFF;
         }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #FFFFFF;
+            background-color: #003B6F;
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -81,7 +92,7 @@
         <h2>Calculadora Baja Médica</h2>
         <form id="bajaForm">
             <label for="baseCotizacion">Base de cotización mensual (€):</label>
-            <input type="number" id="baseCotizacion" placeholder="Ejemplo: 1768" required>
+            <input type="number" id="baseCotizacion" placeholder="1768" required>
 
             <label for="fechaInicio">Fecha de inicio de la baja:</label>
             <input type="date" id="fechaInicio" required>
@@ -92,8 +103,8 @@
             <button type="submit">Calcular</button>
         </form>
 
-        <div class="result" id="result"></div>
-        <div class="error" id="error" style="color: red; font-weight: bold; margin-top: 10px;"></div>
+        <div id="result"></div>
+        <div class="footer">VICTOR C30 © 2024</div>
     </div>
 
     <script>
@@ -134,7 +145,7 @@
             }
 
             // Cálculo del descuento adicional (100 € por cada 4 días acumulados)
-            const diasTotales = diasBaja + 4; // Asumimos que siempre hay 4 días acumulados previos.
+            const diasTotales = diasBaja + 4; // Asumimos 4 días acumulados previos.
             if (diasTotales > 4) {
                 const bloquesDeCuatro = Math.floor((diasTotales - 4) / 4);
                 descuentoAdicional = bloquesDeCuatro * 100;
@@ -173,20 +184,15 @@
             const fechaInicio = document.getElementById('fechaInicio').value;
             const fechaFin = document.getElementById('fechaFin').value;
 
-            const errorDiv = document.getElementById('error');
-            const resultDiv = document.getElementById('result');
-
             if (!baseCotizacion || baseCotizacion <= 0) {
-                errorDiv.textContent = "La base de cotización debe ser un número mayor que 0.";
+                alert("Por favor, introduce una base de cotización válida.");
                 return;
             }
 
             if (!fechaInicio || !fechaFin || new Date(fechaInicio) > new Date(fechaFin)) {
-                errorDiv.textContent = "La fecha de inicio debe ser anterior o igual a la fecha de fin.";
+                alert("Por favor, selecciona fechas válidas.");
                 return;
             }
-
-            errorDiv.textContent = "";
 
             const diasBaja = calcularDias(fechaInicio, fechaFin);
             const periodos = dividirPorMeses(fechaInicio, fechaFin);
@@ -194,34 +200,34 @@
             let resultadoHTML = `<table>
                 <tr>
                     <th>Mes</th>
-                    <th>Días de baja</th>
-                    <th>Descuento total</th>
-                    <th>Descuento adicional</th>
-                    <th>Salario mensual</th>
+                    <th>Días</th>
+                    <th colspan="2">Descuento</th>
+                    <th>Salario</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th>Adicional</th>
+                    <th>Total</th>
+                    <th></th>
                 </tr>`;
-
-            let totalSalario = 0;
 
             periodos.forEach((periodo) => {
                 const { descuentoTotal, descuentoAdicional } = calcularBaja(baseCotizacion, periodo.dias);
                 const salarioMensual = baseCotizacion - descuentoTotal - descuentoAdicional;
-                totalSalario += salarioMensual;
 
                 resultadoHTML += `
                     <tr>
                         <td>${periodo.inicio.toLocaleDateString()} - ${periodo.fin.toLocaleDateString()}</td>
                         <td>${periodo.dias}</td>
-                        <td>${descuentoTotal} €</td>
                         <td>${descuentoAdicional} €</td>
+                        <td>${descuentoTotal} €</td>
                         <td>${salarioMensual.toFixed(2)} €</td>
                     </tr>`;
             });
 
-            resultadoHTML += `
-                </table>
-                <p><strong>Salario total durante la baja:</strong> ${totalSalario.toFixed(2)} €</p>`;
-
-            resultDiv.innerHTML = resultadoHTML;
+            resultadoHTML += `</table>`;
+            document.getElementById('result').innerHTML = resultadoHTML;
         });
     </script>
 </body>
